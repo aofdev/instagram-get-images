@@ -1,4 +1,4 @@
-# instagram-get-images
+# Instagram Get Images 🌄
 ![alt tag](https://i.imgur.com/WOMmeKl.png)
 
 ### Features
