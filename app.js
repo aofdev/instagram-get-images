@@ -118,7 +118,7 @@ const self = module.exports = {
   },
 
   main: async (quest, mode) => {
-    const browser = await puppeteer.launch()
+    const browser = await puppeteer.launch({headless: false})
     if (mode === 'hashtags') {
       let hashtags = quest.hashtags.split(',')
       hashtags = await hashtags.map(hashtag => {
@@ -138,7 +138,7 @@ const self = module.exports = {
         })
         let urlImg = await self.getMedia(page, scrollLimit, tags, 'hashtags')
         console.log(chalk.cyan('🌄 Images Total: ' + urlImg.length))
-        const arraySplit = await self.splitUp(urlImg, 10)
+        const arraySplit = await self.splitUp(urlImg, 12)
         await page.close()
         const promises = []
         for (let i = 0; i < arraySplit.length; i++) {
@@ -168,7 +168,7 @@ const self = module.exports = {
       })
       let urlImg = await self.getMedia(page, scrollLimit, account, 'account')
       console.log(chalk.cyan('🌄 Image Total: ' + urlImg.length))
-      const arraySplit = await self.splitUp(urlImg, 10) // Bot 10
+      const arraySplit = await self.splitUp(urlImg, 12) // Bot 10
       await page.close()
       const promises = []
       for (let i = 0; i < arraySplit.length; i++) {
