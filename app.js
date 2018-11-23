@@ -18,6 +18,10 @@ const self = module.exports = {
     return result
   },
 
+  randomInt: (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1) + min)
+  },
+
   getMedia: async (page, scrollLimit, item, mode) => {
     let mediaText = []
     let previousHeight
@@ -27,9 +31,17 @@ const self = module.exports = {
         previousHeight = await page.evaluate('document.body.scrollHeight')
         await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
         await page.waitForFunction(`document.body.scrollHeight > ${previousHeight}`)
-        await page.waitFor(500)
+        await page.waitFor(self.randomInt(400, 1000))
         spinner.color = 'yellow'
-        spinner.text = chalk.yellow((mode === 'hashtags' ? 'Tags: ' : 'Account: ') + item + ' | ⏳ Scrolling [ ' + i + ' / ' + scrollLimit + ' ]')
+        let modeName = '' 
+        if (mode === 'hashtags') {
+          modeName = 'Tags: '
+        } else if (mode === 'account') {
+          modeName = 'Account: '
+        } else if (mode === 'locations') {
+          modeName = 'Locations: '
+        }
+        spinner.text = chalk.yellow(modeName + item + ' | ⏳ Scrolling [ ' + i + ' / ' + scrollLimit + ' ]')
         const textPost = await page.evaluate(() => {
           const images = document.querySelectorAll('a > div > div.KL4Bh > img')
           return [].map.call(images, img => img.src)
@@ -65,8 +77,13 @@ const self = module.exports = {
             fs.mkdirSync(dir)
           }
         }
-      } else {
+      } else if (mode === 'account'){
         let dir = './result/account/' + item
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir)
+        }
+      } else if (mode === 'locations'){
+        let dir = './result/locations/' + item
         if (!fs.existsSync(dir)) {
           fs.mkdirSync(dir)
         }
@@ -103,7 +120,15 @@ const self = module.exports = {
     for (const img of urlImg) {
       try {
         let viewSource = await page.goto(img)
-        fs.writeFile((mode === 'hashtags' ? './result/hashtags/' : './result/account/') + item + '/bot-' + bot + '-' + count + '.jpg', await viewSource.buffer(), function (err) {
+        let modePath = '' 
+        if (mode === 'hashtags') {
+          modePath = './result/hashtags/'
+        } else if (mode === 'account') {
+          modePath = './result/account/'
+        } else if (mode === 'locations') {
+          modePath = './result/locations/'
+        }
+        fs.writeFile(modePath + item + '/bot-' + bot + '-' + count + '.jpg', await viewSource.buffer(), function (err) {
           if (err) {
             throw (err)
           }
@@ -138,7 +163,7 @@ const self = module.exports = {
         })
         let urlImg = await self.getMedia(page, scrollLimit, tags, 'hashtags')
         console.log(chalk.cyan('🌄 Images Total: ' + urlImg.length))
-        const arraySplit = await self.splitUp(urlImg, 12)
+        const arraySplit = await self.splitUp(urlImg, 10)
         await page.close()
         const promises = []
         for (let i = 0; i < arraySplit.length; i++) {
@@ -154,7 +179,7 @@ const self = module.exports = {
         await Promise.all(promises)
         console.log(chalk.green('✅ Succeed'))
       }
-    } else {
+    } else if (mode === 'account'){
       const account = quest.account
       const scrollLimit = parseInt(quest.scroll)
       await self.makeFolder(account, 'account')
@@ -168,7 +193,7 @@ const self = module.exports = {
       })
       let urlImg = await self.getMedia(page, scrollLimit, account, 'account')
       console.log(chalk.cyan('🌄 Image Total: ' + urlImg.length))
-      const arraySplit = await self.splitUp(urlImg, 12) // Bot 10
+      const arraySplit = await self.splitUp(urlImg, 10) // Bot 10
       await page.close()
       const promises = []
       for (let i = 0; i < arraySplit.length; i++) {
@@ -178,6 +203,35 @@ const self = module.exports = {
             page.reload()
           })
           await self.saveImage(page, account, arraySplit[i], i, 'account')
+          await page.close()
+        }))
+      }
+      await Promise.all(promises)
+      console.log(chalk.green('✅ Succeed'))
+    } else if (mode === 'locations'){
+      const locations = quest.locations
+      const scrollLimit = parseInt(quest.scroll)
+      await self.makeFolder(locations, 'locations')
+      const page = await browser.newPage()
+      page.on('error', () => {
+        console.log(chalk.red('🚀 Page Reload'))
+        page.reload()
+      })
+      await page.goto('https://www.instagram.com/explore/locations/' + locations + '/', {
+        timeout: 0
+      })
+      let urlImg = await self.getMedia(page, scrollLimit, locations, 'locations')
+      console.log(chalk.cyan('🌄 Image Total: ' + urlImg.length))
+      const arraySplit = await self.splitUp(urlImg, 10) // Bot 10
+      await page.close()
+      const promises = []
+      for (let i = 0; i < arraySplit.length; i++) {
+        promises.push(browser.newPage().then(async page => {
+          page.on('error', () => {
+            console.log(chalk.red('🚀 Page Reload'))
+            page.reload()
+          })
+          await self.saveImage(page, locations, arraySplit[i], i, 'locations')
           await page.close()
         }))
       }
