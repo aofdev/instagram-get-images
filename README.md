@@ -1,5 +1,5 @@
 # Instagram Get Images 🌄
-![alt tag](https://i.imgur.com/WOMmeKl.png)
+![alt tag](https://i.imgur.com/p9tLZAV.png)
 
 ### Features
 - 🤖 Parallel Pages Process
