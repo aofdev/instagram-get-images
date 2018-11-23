@@ -18,7 +18,7 @@ const askMode = () => {
     type: 'list',
     name: 'mode',
     message: 'Select Mode:',
-    choices: ['Hashtags', 'Account'],
+    choices: ['Hashtags', 'Account', 'Locations'],
     validate: function (value) {
       if (value.length) {
         return true
@@ -94,14 +94,51 @@ const askQuestionsAccount = () => {
   return inquirer.prompt(questions)
 }
 
+const askQuestionsLocation = () => {
+  const questions = [{
+    name: 'locations',
+    type: 'input',
+    message: 'Enter Location Id:',
+    validate: function (value) {
+      var pass = value.match(
+        /^[\+\-]?\d*\.?\d+(?:[Ee][\+\-]?\d+)?$/
+      )
+      if (pass) {
+        return true
+      }
+      return 'Please enter number'
+    }
+  },
+  {
+    type: 'input',
+    name: 'scroll',
+    default: '50',
+    message: 'Enter Scroll Limit:',
+    validate: function (value) {
+      var pass = value.match(
+        /^[\+\-]?\d*\.?\d+(?:[Ee][\+\-]?\d+)?$/
+      )
+      if (pass) {
+        return true
+      }
+      return 'Please enter number'
+    }
+  }
+  ]
+  return inquirer.prompt(questions)
+}
+
 const setQuest = async () => {
   const mode = await askMode()
   if (mode.mode === 'Hashtags') {
     const quest = await askQuestionsHashtag()
     await app.main(quest, 'hashtags')
-  } else {
+  } else if (mode.mode === 'Account') {
     const quest = await askQuestionsAccount()
     await app.main(quest, 'account')
+  } else if (mode.mode === 'Locations') {
+    const quest = await askQuestionsLocation()
+    await app.main(quest, 'locations')
   }
 }
 
