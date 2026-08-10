@@ -44,7 +44,7 @@ const self = module.exports = {
         spinner.text = chalk.yellow(modeName + item + ' | ⏳ Scrolling [ ' + i + ' / ' + scrollLimit + ' ]')
         const textPost = await page.evaluate(() => {
           const images = document.querySelectorAll('a > div > div.KL4Bh > img')
-          return [].map.call(images, img => img.src)
+          return [].map.call(images, img => img.src.replace(/\/c\d+\.\d+\.\d+\.\d+[a-z]*\//g, '/').replace(/\/c\d+\.\d+\.\d+\.\d+\//g, '/'))
         })
         for (let post of textPost) {
           mediaText.push(post)
@@ -55,7 +55,7 @@ const self = module.exports = {
         await page.evaluate('window.scrollTo(0, document.documentElement.scrollTop || document.body.scrollTop)')
         const imgPost = await page.evaluate(() => {
           const images = document.querySelectorAll('a > div > div.KL4Bh > img')
-          return [].map.call(images, img => img.src)
+          return [].map.call(images, img => img.src.replace(/\/c\d+\.\d+\.\d+\.\d+[a-z]*\//g, '/').replace(/\/c\d+\.\d+\.\d+\.\d+\//g, '/'))
         })
         for (let post of imgPost) {
           mediaText.push(post)
